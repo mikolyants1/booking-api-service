@@ -25,10 +25,10 @@ export class BookingService {
   async createNewBooking(dto: CreateBookingDto) {
     try {
       const booking = await this.repository.createBooking(dto);
+      await this.repository.updateBookingStatus(booking.id, Status.CHECKING_AVAILABILITY);
       this.kafka.emit<ERoute, IBookingCheckPayload>(ERoute.BOOKING_CHECK, {
         bookingId: booking.id,
       });
-      await this.repository.updateBookingStatus(booking.id, Status.CHECKING_AVAILABILITY);
       return { bookingId: booking.id };
     } catch (e) {
       throw new InternalServerErrorException(e);
